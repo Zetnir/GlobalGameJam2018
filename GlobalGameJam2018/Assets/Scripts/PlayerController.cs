@@ -26,7 +26,7 @@ public class PlayerController : MonoBehaviour
     public bool isGrounded = false;*/
 
     //Variable for punch
-    public float punchCD = 0.25f;
+    /*public float punchCD = 0.25f;
     public float punchDuration = 0.5f;
     public bool isPunched = false;
     public bool canPunch = true;
@@ -34,16 +34,16 @@ public class PlayerController : MonoBehaviour
     public float punchCDTimer;
     public bool isPunching = false;
     public Collider punchCol;
-    public Collider lowKickCol;
+    public Collider lowKickCol;*/
 
     //Var..iable for dash
-    public bool isDashing = false;
+    /*public bool isDashing = false;
     public float dashCD = 2f;
     public float dashForce = 7;
-    public float dashTime;
+    public float dashTime;*/
 
     //Variable for grab
-    public bool isGrabbing = false;
+    /*public bool isGrabbing = false;
     public bool grabbedSomeone = false;
     public bool attemptGrabDistance = false;
     public bool canGrab = true;
@@ -59,10 +59,10 @@ public class PlayerController : MonoBehaviour
     public float grabbedCD = 0.5f;
     public float actualDistance;
     public Vector3 grabStartPosition;
-    public Collider grabCol;
+    public Collider grabCol;*/
 
     //Variable for the shield
-    public Collider shieldCol;
+    /*public Collider shieldCol;*/
 
     //Variable for fighting
     public float weakness = 50;
@@ -77,9 +77,9 @@ public class PlayerController : MonoBehaviour
         // est surement pas tres utile
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         playerRB = GetComponent<Rigidbody>();
-        punchCol = transform.GetChild(1).GetComponent<Collider>();
+        /*punchCol = transform.GetChild(1).GetComponent<Collider>();
         grabCol = transform.GetChild(2).GetComponent<Collider>();
-        shieldCol = transform.GetChild(4).GetComponent<Collider>();
+        shieldCol = transform.GetChild(4).GetComponent<Collider>();*/
         // punchObject = transform.Find("Cube").GetComponent<GameObject>();
         groundMask = LayerMask.GetMask("Ground");
 
@@ -96,31 +96,31 @@ public class PlayerController : MonoBehaviour
     {
         float h = gameManager.horizontal[numController];
         float v = gameManager.vertical[numController];
-        bool jump = gameManager.jump[numController];
+        /*bool jump = gameManager.jump[numController];
         bool punch = gameManager.fire1[numController];
-        bool grab = gameManager.fire2[numController];
+        bool grab = gameManager.fire2[numController];*/
         //float trigger = gameManager.triggers[numController];
         //bool special = gameManager.R1[numController];
 
-        if (!isGrabbing && !isGrabbed && !isPunching)
-        {
+        //if (!isGrabbing && !isGrabbed && !isPunching)
+        //{
             Turning(h, v);
-            Jump(jump);
+            //Jump(jump);
             //LaunchDash(trigger, h, v);
             Move(h, v);
             //LaunchShield(trigger);
 
-            grabStartDistance = actualDistance;
-        }
+            //grabStartDistance = actualDistance;
+        //}
 
         //BasicAttack(punch,jump, special);
-        LaunchGrab(grab);
+        //LaunchGrab(grab);
 
-        if (isGrabbed)
+        /*if (isGrabbed)
         {
             isPunching = false;
 
-        }
+        }*/
         Death();
         
         weakness = Mathf.Clamp(weakness, 0, 125);
@@ -177,7 +177,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void BasicAttack(bool punch, bool jump, bool special)
+    /*void BasicAttack(bool punch, bool jump, bool special)
     {
 
         if(punch && !isPunching && canPunch && !jump && !special)
@@ -209,9 +209,9 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-    }
+    }*/
 
-    void LaunchDash(float dash, float h, float v)
+    /*void LaunchDash(float dash, float h, float v)
     {
         if(dash == -1 && !isDashing)
         {
@@ -222,7 +222,7 @@ public class PlayerController : MonoBehaviour
             playerRB.velocity = direction * dashForce;
 
         }
-
+        
         if (isDashing)
         {
             if (dashTime > 0)
@@ -235,7 +235,7 @@ public class PlayerController : MonoBehaviour
                 dashTime = 0;
             }
         }
-    }
+    }*/
 
     void Death()
     {
@@ -246,7 +246,7 @@ public class PlayerController : MonoBehaviour
 
     }
 
-    void LaunchGrab(bool grab)
+    /*void LaunchGrab(bool grab)
     {
         actualDistance = (transform.position - grabCol.transform.position).magnitude;
 
@@ -328,10 +328,10 @@ public class PlayerController : MonoBehaviour
                 grabbedTime = 0;
             }
         }
+        
+    }*/
 
-    }
-
-    void LaunchShield(float shield)
+    /*void LaunchShield(float shield)
     {
         if(shield == 1)
         {
@@ -343,7 +343,7 @@ public class PlayerController : MonoBehaviour
             shieldCol.enabled = false;
             shieldCol.GetComponent<MeshRenderer>().enabled = false;
         }
-    }
+    }*/
 
     public void DamageCalculator(float damageDeal)
     {
