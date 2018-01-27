@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class GameManager : MonoBehaviour {
 
     //List of players and characters' objects
     public List<GameObject> players = new List<GameObject>();
     public List<Object> objCharacters = new List<Object>();
+    public List<Object> objPlayers = new List<Object>();
+    public GameObject[] zonePlayer = new GameObject[MAX_PLAYERS];
 
     //constant number of players
     const int MAX_PLAYERS = 4;
@@ -25,57 +29,57 @@ public class GameManager : MonoBehaviour {
     public bool[] start = new bool[MAX_PLAYERS];
     public bool[] select = new bool[MAX_PLAYERS];
     /*public bool[] R1 = new bool[MAX_PLAYERS];
-    public bool[] L1 = new bool[MAX_PLAYERS];
-    public float[] triggers = new float[MAX_PLAYERS];*/
+    public bool[] L1 = new bool[MAX_PLAYERS];*/
+    public float[] triggers = new float[MAX_PLAYERS];
 
+    //Variables for the Menu
+    public Button currentButton;
 
     //Variables for the RoomMenu
     //Variables for the selection of the player
     public int[] playersIndex = new int[MAX_PLAYERS];
     int[] characterChoseByPlayer_ = new int[MAX_PLAYERS];
-    bool[] canChangeChar_ = new bool[MAX_PLAYERS] { true, true, true, true};
-    Vector3 characterPositon = new Vector3(-2.8f,0,3f);
-
-        //Variables for the players' connection
+    bool[] canChangeChar_ = new bool[MAX_PLAYERS] { true, true, true, true };
+    Vector3 characterPositon = new Vector3(-2.2f, 1, 0f);
+    Image[] readyUI = new Image[MAX_PLAYERS];
+    //Variables for the players' connection
     public int nPlayersConnected = 0;
     public int nPlayerReady = 0;
     public bool[] isReady = new bool[MAX_PLAYERS] { false, false, false, false };
-    public bool[] isConnected = new bool[MAX_PLAYERS] {false, false, false, false };
+    public bool[] isConnected = new bool[MAX_PLAYERS] { false, false, false, false };
 
     //Variables InGame
     public int nPlayersCreated = 0;
-
+    public int malusCount = 0;
+    public BallScript ball;
     //GamePhase variables
-    public enum GamePhase {Begin, Menu, RoomMenu, InGame, Pause, EndGame};
-    public GamePhase currentPhase = GamePhase.Begin;
+    public enum GamePhase { Menu, RoomMenu, InGame, Pause, EndGame };
+    public GamePhase currentPhase;
 
     // Use this for initialization
-    void Start () {
+    void Start() {
         //Add the characters object to the resources data as objects
-        for(int i = 0; i < MAX_CHARACTERS; i++)
+        for (int i = 0; i < MAX_CHARACTERS; i++)
         {
-            objCharacters.Add(Resources.Load("Models/Character" + (i+1)));
+            objCharacters.Add(Resources.Load("Models/Characters/Character" + (i + 1)));
+            objPlayers.Add(Resources.Load("Models/Prefabs/Character" + (i + 1)));
         }
 
         //Set up the first GamePhase
-        if(currentPhase == GamePhase.Begin)
-        {
-            currentPhase = GamePhase.Menu;
-            SceneManager.LoadScene("MenuScene");
-        }
+        currentPhase = GamePhase.Menu;
+
         //Dont Destroy this gameobject when we change the level
         DontDestroyOnLoad(gameObject);
     }
-	
-	// Update is called once per frame
-	void Update () {
+
+    // Update is called once per frame
+    void Update() {
 
         //Call some functions depending on the currentPhase
         switch (currentPhase)
         {
-            case GamePhase.Begin:
-                break;
             case GamePhase.Menu:
+                InMenu();
                 break;
             case GamePhase.RoomMenu:
                 ConnectPlayer();
@@ -83,6 +87,7 @@ public class GameManager : MonoBehaviour {
                 break;
             case GamePhase.InGame:
                 InGame();
+                Cursor.visible = false;
                 RestartGame();
                 break;
             case GamePhase.Pause:
@@ -96,9 +101,8 @@ public class GameManager : MonoBehaviour {
         SetInputs();
 
         //Makes the cursor invisible
-        Cursor.visible = false;
 
-        
+
     }
 
     //Set the input from the controllers for all of the players
@@ -115,13 +119,43 @@ public class GameManager : MonoBehaviour {
             fire1[i] = Input.GetButtonDown("Fire1" + (i + 1));
             fire2[i] = Input.GetButtonDown("Fire2" + (i + 1));
             start[i] = Input.GetButtonDown("Start" + (i + 1));
-            select[i] = Input.GetButtonDown("Select" + (i + 1));
-            /*triggers[i] = Input.GetAxis("TriggerR" + (i + 1));
-            R1[i] = Input.GetButtonDown("R1" + (i + 1));
+            //select[i] = Input.GetButtonDown("Select" + (i + 1));
+            triggers[i] = Input.GetAxis("TriggerR" + (i + 1));
+            /*R1[i] = Input.GetButtonDown("R1" + (i + 1));
             L1[i] = Input.GetButtonDown("L1" + (i + 1));*/
         }
     }
 
+    void InMenu()
+    {
+        /*for (int i = 0; i < MAX_PLAYERS; i++)
+        {
+            if (arrowV[i] < 0 )
+            {
+                //currentButton = Button;
+                //currentButton = 
+            }
+
+            if (arrowH[i] == 0 && horizontal[i] == 0)
+            {
+                canChangeChar_[i] = true;
+            }
+
+            if(jump[i])
+            {
+                //currentButton.onClick
+            }
+
+            currentButton.Select();
+
+        }*/
+    }
+
+    public void LoadRoom()
+    {
+        currentPhase = GamePhase.RoomMenu;
+        SceneManager.LoadScene("PreloadingScene");
+    }
     //Connect the player to the party room
     void ConnectPlayer()
     {
@@ -135,10 +169,7 @@ public class GameManager : MonoBehaviour {
                 characterChoseByPlayer_[j] = 0;
                 //Set the playerIndex for the controller (Ex : 2nd controller got the 1rst player index if he connect himself first
                 playersIndex[j] = nPlayersConnected;
-                players.Add((GameObject)Instantiate(objCharacters[characterChoseByPlayer_[j]], (characterPositon + new Vector3(playersIndex[j] * 2, 0, 0)), Quaternion.Euler(Vector3.zero)));
-                players[playersIndex[j]].gameObject.GetComponent<PlayerController>().enabled = false;
-                //Have to change cause when we connect to the roomMenu we are not in the InGame level so we can't use the PlayerController script
-                //players[playersIndex[j]].gameObject.GetComponent<PlayerController>().numController = j;
+                players.Add((GameObject)Instantiate(objCharacters[characterChoseByPlayer_[j]], (characterPositon + new Vector3(playersIndex[j] * 1.5f, 0, 0)), Quaternion.Euler(Vector3.zero)));
                 nPlayersConnected++;
             }
             // Disconnect the player from the room
@@ -159,14 +190,15 @@ public class GameManager : MonoBehaviour {
             {
                 isReady[j] = false;
                 nPlayerReady--;
-
+                readyUI[playersIndex[j]].color = Color.white;
             }
             // if nobody is ready and someone press cancel the level switch for the menu
             else if(!isConnected[j] && cancel[j])
             {
                 //return to the menu
                 currentPhase = GamePhase.Menu;
-                SceneManager.LoadScene("Menu");
+                SceneManager.LoadScene("MenuScene");
+                Destroy(gameObject);
             }
             else if(isConnected[j] && jump[j])
             {
@@ -174,16 +206,23 @@ public class GameManager : MonoBehaviour {
                 if(nPlayerReady == nPlayersConnected)
                 {
                     //Launch the game
-                    currentPhase = GamePhase.InGame;
                     SceneManager.LoadScene("PreloadingScene");
+                    currentPhase = GamePhase.InGame;
                 }
                 // if the player wasn't ready then it put the player to the state ready
                 else if (!isReady[j])
                 {
                     isReady[j] = true;
+                    readyUI[playersIndex[j]].color = Color.green;
                     nPlayerReady++;
                 }
             }
+            if (GameObject.Find("CanvasImage"))
+            {
+                 readyUI[j] = GameObject.Find("CanvasImage").transform.GetChild(j).GetComponent<Image>();
+            }
+
+
 
         }
     }
@@ -205,10 +244,9 @@ public class GameManager : MonoBehaviour {
                 {
                     characterChoseByPlayer_[j]++;
                 }
-                players[playersIndex[j]] = (GameObject)Instantiate(objCharacters[characterChoseByPlayer_[j]], new Vector3(-5 + (playersIndex[j] * 2), 1, 0), Quaternion.Euler(Vector3.zero));
+                players[playersIndex[j]] = (GameObject)Instantiate(objCharacters[characterChoseByPlayer_[j]], (characterPositon + new Vector3(playersIndex[j] * 1.5f, 0, 0)), Quaternion.Euler(Vector3.zero));
                 //Have to change cause when we connect to the roomMenu we are not in the InGame level so we can't use the PlayerController script
                 //players[playersIndex[j]].gameObject.GetComponent<PlayerController>().numController = j;
-                players[playersIndex[j]].gameObject.GetComponent<PlayerController>().enabled = false;
                 canChangeChar_[j] = false;
             }
             // Change the character chose by the player and go to the previous character in the resource list
@@ -223,10 +261,9 @@ public class GameManager : MonoBehaviour {
                 {
                     characterChoseByPlayer_[j]--;
                 }
-                players[playersIndex[j]] = (GameObject)Instantiate(objCharacters[characterChoseByPlayer_[j]], new Vector3(-5 + (playersIndex[j] * 2), 1, 0), Quaternion.Euler(Vector3.zero));
+                players[playersIndex[j]] = (GameObject)Instantiate(objCharacters[characterChoseByPlayer_[j]], (characterPositon + new Vector3(playersIndex[j] * 1.5f, 0, 0)), Quaternion.Euler(Vector3.zero));
                 //Have to change cause when we connect to the roomMenu we are not in the InGame level so we can't use the PlayerController script
                 //players[playersIndex[j]].gameObject.GetComponent<PlayerController>().numController = j;
-                players[playersIndex[j]].gameObject.GetComponent<PlayerController>().enabled = false;
                 canChangeChar_[j] = false;
             }
 
@@ -240,17 +277,73 @@ public class GameManager : MonoBehaviour {
 
     void InGame()
     {
-        for(int i = 0; i <MAX_PLAYERS; i++)
+        for (int i = 0; i < nPlayersConnected; i++)
         {
-            
-            if(nPlayersCreated < nPlayersConnected)
+            zonePlayer[i] = GameObject.Find("Zone" + (i + 1));
+            if (nPlayersCreated < nPlayersConnected && (SceneManager.GetActiveScene().name == "GameScene1" || SceneManager.GetActiveScene().name == "GameScene2" || SceneManager.GetActiveScene().name == "GameScene3"))
             {
-                players[playersIndex[i]] = (GameObject)Instantiate(objCharacters[characterChoseByPlayer_[i]], new Vector3(-5 + (playersIndex[i] * 2), 1, 0), Quaternion.Euler(Vector3.zero));
+                players[playersIndex[i]] = (GameObject)Instantiate(objPlayers[characterChoseByPlayer_[i]], zonePlayer[playersIndex[i]].transform.position, Quaternion.Euler(Vector3.zero));
                 players[playersIndex[i]].gameObject.GetComponent<PlayerController>().numController = i;
-                players[playersIndex[i]].gameObject.GetComponent<PlayerController>().enabled = true;
                 nPlayersCreated++;
             }
+
+            if(malusCount > 0 )
+            {
+                if (!players[playersIndex[i]].GetComponent<PlayerController>().isMalus)
+                {
+                    if(playersIndex[i] == ball.zonePosition)
+                    {
+                        ball.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+                    }
+                    else
+                    {
+                        ball.transform.localScale = new Vector3(1f, 1f, 1f);
+                    }
+                }
+            }
         }
+
+    }
+
+    public void BombExplode(int loserIndex)
+    {
+        for(int i = 0; i <MAX_PLAYERS; i++)
+        {
+            if(playersIndex[i] == loserIndex)
+            {
+                isConnected[playersIndex[i]] = false;
+                Destroy(players[playersIndex[i]].gameObject);
+                players.Remove(players[playersIndex[i]]);
+                for (int k = i + 1; k < MAX_PLAYERS; k++)
+                {
+                    if (playersIndex[k] > 0)
+                        playersIndex[k]--;
+                }
+                nPlayersConnected--;
+
+            }
+
+            if (nPlayersConnected == 3)
+            {
+                SceneManager.LoadScene("GameScene2");
+                nPlayersCreated = 0;
+
+            }
+            if (nPlayersConnected == 2)
+            {
+                SceneManager.LoadScene("GameScene3");
+                nPlayersCreated = 0;
+
+            }
+            if (nPlayersConnected == 1)
+            {
+                SceneManager.LoadScene("EndGame");
+                currentPhase = GamePhase.EndGame;
+            }
+        }
+
+
+
     }
 
     void PauseMenu()
@@ -260,6 +353,7 @@ public class GameManager : MonoBehaviour {
 
         }
     }
+
     void RestartGame()
     {
         for(int i = 0; i < MAX_PLAYERS; i++)

@@ -1,4 +1,8 @@
 sceneSetups:
+<<<<<<< HEAD
 - path: Assets/Scene/Scene_Kendji.unity
+=======
+- path: Assets/Scene/MenuScene.unity
+>>>>>>> f4be6784507c2bc5e732eacef5ceaa773cf1f001
   isLoaded: 1
   isActive: 1

@@ -8,7 +8,7 @@ public class LoadingScript : MonoBehaviour {
     public Image imgPourcent;
     public Text textPourcent;
     public GameManager gameManager;
-    public int buildIndex;
+    public string sceneName;
     public Scene LoadingScene;
 
     AsyncOperation synchScene;
@@ -19,10 +19,13 @@ public class LoadingScript : MonoBehaviour {
         switch (gameManager.currentPhase)
         {
             case GameManager.GamePhase.Menu:
+                sceneName = "MenuScene";
                 break;
             case GameManager.GamePhase.RoomMenu:
+                sceneName = "RoomScene";
                 break;
             case GameManager.GamePhase.InGame:
+                sceneName = "GameScene1";
                 break;
             case GameManager.GamePhase.Pause:
                 break;
@@ -32,11 +35,11 @@ public class LoadingScript : MonoBehaviour {
 
         if(imgPourcent)
         {
-            synchScene = SceneManager.LoadSceneAsync(buildIndex);
+            synchScene = SceneManager.LoadSceneAsync("LoadingScene");
         }
         else
         {
-            synchScene = SceneManager.LoadSceneAsync(LoadingScene.buildIndex);
+            synchScene = SceneManager.LoadSceneAsync(sceneName);
         }
     }
 	
