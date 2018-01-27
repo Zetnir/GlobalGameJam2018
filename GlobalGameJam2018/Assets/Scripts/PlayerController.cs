@@ -105,7 +105,7 @@ public class PlayerController : MonoBehaviour
         if (!isGrabbing && !isGrabbed && !isPunching)
         {
             Turning(h, v);
-            Jump(jump);
+            //Jump(jump);
             //LaunchDash(trigger, h, v);
             Move(h, v);
             //LaunchShield(trigger);
