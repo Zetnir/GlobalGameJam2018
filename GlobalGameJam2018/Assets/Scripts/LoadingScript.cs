@@ -25,7 +25,7 @@ public class LoadingScript : MonoBehaviour {
                 sceneName = "RoomScene";
                 break;
             case GameManager.GamePhase.InGame:
-                sceneName = "GameScene";
+                sceneName = "Scene_Ludo";
                 break;
             case GameManager.GamePhase.Pause:
                 break;

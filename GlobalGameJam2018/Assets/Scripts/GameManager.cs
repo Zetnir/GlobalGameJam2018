@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour {
     //List of players and characters' objects
     public List<GameObject> players = new List<GameObject>();
     public List<Object> objCharacters = new List<Object>();
+    public List<Object> objPlayers = new List<Object>();
 
     //constant number of players
     const int MAX_PLAYERS = 4;
@@ -59,6 +60,7 @@ public class GameManager : MonoBehaviour {
         for (int i = 0; i < MAX_CHARACTERS; i++)
         {
             objCharacters.Add(Resources.Load("Models/Characters/Character" + (i + 1)));
+            objPlayers.Add(Resources.Load("Models/Prefabs/Character" + (i + 1)));
         }
 
         //Set up the first GamePhase
@@ -203,8 +205,8 @@ public class GameManager : MonoBehaviour {
                 if(nPlayerReady == nPlayersConnected)
                 {
                     //Launch the game
-                    currentPhase = GamePhase.InGame;
                     SceneManager.LoadScene("PreloadingScene");
+                    currentPhase = GamePhase.InGame;
                 }
                 // if the player wasn't ready then it put the player to the state ready
                 else if (!isReady[j])
@@ -270,9 +272,9 @@ public class GameManager : MonoBehaviour {
         for(int i = 0; i <MAX_PLAYERS; i++)
         {
             
-            if(nPlayersCreated < nPlayersConnected)
+            if(nPlayersCreated < nPlayersConnected && SceneManager.GetActiveScene().name == "Scene_Ludo")
             {
-                players[playersIndex[i]] = (GameObject)Instantiate(objCharacters[characterChoseByPlayer_[i]], new Vector3(-5 + (playersIndex[i] * 2), 1, 0), Quaternion.Euler(Vector3.zero));
+                players[playersIndex[i]] = (GameObject)Instantiate(objPlayers[characterChoseByPlayer_[i]], new Vector3(-5 + (playersIndex[i] * 2), 1, 0), Quaternion.Euler(Vector3.zero));
                 players[playersIndex[i]].gameObject.GetComponent<PlayerController>().numController = i;
                 nPlayersCreated++;
             }
