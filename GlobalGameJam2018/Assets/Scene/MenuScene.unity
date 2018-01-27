@@ -1034,6 +1034,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   players: []
   objCharacters: []
+  objPlayers: []
+  zonePlayer:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   horizontal:
   - 0
   - 0
@@ -1067,6 +1073,7 @@ MonoBehaviour:
   isReady: 00000000
   isConnected: 00000000
   nPlayersCreated: 0
+  ball: {fileID: 0}
   currentPhase: 0
 --- !u!4 &2091048184
 Transform:

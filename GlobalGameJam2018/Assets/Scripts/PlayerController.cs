@@ -26,7 +26,7 @@ public class PlayerController : MonoBehaviour
     public bool isGrounded = false;*/
 
     //Variable for punch
-    /*public float punchCD = 0.25f;
+    public float punchCD = 0.25f;
     public float punchDuration = 0.5f;
     public bool isPunched = false;
     public bool canPunch = true;
@@ -34,13 +34,13 @@ public class PlayerController : MonoBehaviour
     public float punchCDTimer;
     public bool isPunching = false;
     public Collider punchCol;
-    public Collider lowKickCol;*/
+
 
     //Var..iable for dash
-    /*public bool isDashing = false;
-    public float dashCD = 2f;
+    public bool isDashing = false;
+    public float dashCD = 1f;
     public float dashForce = 7;
-    public float dashTime;*/
+    public float dashTime;
 
     //Variable for grab
     /*public bool isGrabbing = false;
@@ -69,7 +69,14 @@ public class PlayerController : MonoBehaviour
     public float damagesRecieve = 0;
     public bool isDead = false;
     public float weakChange = 12.5f;
-
+    public bool isStun = false;
+    public float stunDuration = 0.5f;
+    public float powerJauge = 0f;
+    public int stunCount = 0;
+    public int stunStack_ = 0;
+    public bool isBonus = false;
+    public bool isMalus = false;
+    public BallScript ball;
     public GameManager gameManager;
     // Use this for initialization
     void Start()
@@ -77,8 +84,8 @@ public class PlayerController : MonoBehaviour
         // est surement pas tres utile
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         playerRB = GetComponent<Rigidbody>();
-        /*punchCol = transform.GetChild(1).GetComponent<Collider>();
-        grabCol = transform.GetChild(2).GetComponent<Collider>();
+        punchCol = transform.GetChild(0).GetComponent<Collider>();
+        /*grabCol = transform.GetChild(2).GetComponent<Collider>();
         shieldCol = transform.GetChild(4).GetComponent<Collider>();*/
         // punchObject = transform.Find("Cube").GetComponent<GameObject>();
         groundMask = LayerMask.GetMask("Ground");
@@ -89,40 +96,50 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        float h = gameManager.horizontal[numController];
+        float v = gameManager.vertical[numController];
+        bool jump = gameManager.jump[numController];
+        bool punch = gameManager.fire1[numController];
+        float dash = gameManager.triggers[numController];
+        bool bonus = gameManager.fire2[numController];
+        bool malus = gameManager.cancel[numController];
 
+        if (!isStun)
+        {
+            if(!isPunching)
+            {
+                Move(h, v);
+                Turning(h, v);
+                LaunchDash(dash, h, v);
+            }
+            Attack(punch);
+        }
+        else
+        {
+            if(stunCount < (8 + 2*stunStack_))
+            {
+                if(jump)
+                stunCount++;
+            }
+            else
+            {
+                stunCount = 0;
+                isStun = false;
+            }
+        }
+
+        ball = GameObject.Find("Sphere").GetComponent<BallScript>();
+        powerJauge = Mathf.Clamp(powerJauge,0, 100);
+        if(powerJauge >= 95)
+        {
+            //Power(bonus, malus);
+        }
     }
 
     void FixedUpdate()
     {
-        float h = gameManager.horizontal[numController];
-        float v = gameManager.vertical[numController];
-        /*bool jump = gameManager.jump[numController];
-        bool punch = gameManager.fire1[numController];
-        bool grab = gameManager.fire2[numController];*/
-        //float trigger = gameManager.triggers[numController];
-        //bool special = gameManager.R1[numController];
 
-        //if (!isGrabbing && !isGrabbed && !isPunching)
-        //{
-            Turning(h, v);
-            //Jump(jump);
-            //LaunchDash(trigger, h, v);
-            Move(h, v);
-            //LaunchShield(trigger);
-
-            //grabStartDistance = actualDistance;
-        //}
-
-        //BasicAttack(punch,jump, special);
-        //LaunchGrab(grab);
-
-        /*if (isGrabbed)
-        {
-            isPunching = false;
-
-        }*/
         Death();
-        
         weakness = Mathf.Clamp(weakness, 0, 125);
     }
     // Move the player around the scene.
@@ -136,8 +153,72 @@ public class PlayerController : MonoBehaviour
 
         // Move the player to it's current position plus the movement.
         playerRB.MovePosition(transform.position + playerMovement);
+
     }
 
+    void Power(bool bonus, bool malus)
+    {
+        powerJauge = 0f;
+        if(bonus)
+        {
+            isBonus = true;
+            StartCoroutine(PowerDuration(4f));
+
+        }
+
+        if (malus)
+        {
+            isMalus = true;
+            gameManager.malusCount++;
+            StartCoroutine(PowerDuration(10f));
+
+        }
+
+    }
+
+    IEnumerator PowerDuration(float timeWait)
+    {
+        yield return new WaitForSeconds(timeWait);
+        isBonus = false;
+        isMalus = false;
+
+    }
+    public void Stun(int powerStack)
+    {
+        isStun = true;
+        stunStack_ = powerStack;
+        stunCount = 0;
+        StartCoroutine(StunWait(powerStack * 1.5f + stunDuration));
+    }
+
+    IEnumerator StunWait(float timeWait)
+    {
+        yield return new WaitForSeconds(timeWait);
+        if(isStun)
+        isStun = false;
+    }
+
+    void Attack(bool punch)
+    {
+        if (punch && !isPunching)
+        {
+            punchCol.enabled = true;
+            punchCol.GetComponent<MeshRenderer>().enabled = true;
+            punchTimer = Time.time;
+            isPunching = true;
+            playerRB.constraints = RigidbodyConstraints.FreezeRotation;
+
+        }
+
+        if (Time.time - punchTimer > punchDuration)
+        {
+            punchCol.enabled = false;
+            isPunching = false;
+            punchCol.GetComponent<MeshRenderer>().enabled = false;
+            playerRB.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        }
+
+    }
     // Enable the player to jump and fall
     /*void Jump(bool jump)
     {
@@ -162,17 +243,15 @@ public class PlayerController : MonoBehaviour
     {
         if(h!=0 || v!=0)
         {
-            //playerRB.constraints = RigidbodyConstraints.FreezeRotationX;
             playerRB.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
 
             float rot = Mathf.Atan2(v, -h) * Mathf.Rad2Deg + 90;
             Quaternion newRot = Quaternion.Euler(0, rot, 0);
-            transform.rotation = Quaternion.Slerp(transform.rotation, newRot, Time.deltaTime* speedRot);
-            //lastRotation = transform.rotation;
+
+            playerRB.rotation = Quaternion.Slerp(transform.rotation, newRot, Time.deltaTime * speedRot);
         }
         else
         {
-            //transform.rotation = lastRotation;
             playerRB.constraints = RigidbodyConstraints.FreezeRotation;
         }
     }
@@ -211,7 +290,7 @@ public class PlayerController : MonoBehaviour
 
     }*/
 
-    /*void LaunchDash(float dash, float h, float v)
+    void LaunchDash(float dash, float h, float v)
     {
         if(dash == -1 && !isDashing)
         {
@@ -235,7 +314,7 @@ public class PlayerController : MonoBehaviour
                 dashTime = 0;
             }
         }
-    }*/
+    }
 
     void Death()
     {
