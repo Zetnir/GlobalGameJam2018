@@ -16,7 +16,7 @@ public class PlayerController : MonoBehaviour
 
     //Variable for movement 
     public float speedRot = 10;
-    public float speed = 5f;
+    public float speed = 2f;
     public Quaternion lastRotation;
 
     //Variable for jump
@@ -128,7 +128,7 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        ball = GameObject.Find("Sphere").GetComponent<BallScript>();
+        ball = GameObject.Find("ball").GetComponent<BallScript>();
         powerJauge = Mathf.Clamp(powerJauge,0, 100);
         if(powerJauge >= 95)
         {

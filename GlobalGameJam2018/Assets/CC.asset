@@ -121,11 +121,7 @@ MonoBehaviour:
         neutralWhiteClip: 10
       basic:
         postExposure: 1.5
-<<<<<<< HEAD
-        temperature: 26.3
-=======
         temperature: 31.1
->>>>>>> c6a2ced4e98e0ee05810a59ccbe1aaa8d177ec1a
         tint: -29.6
         hueShift: 0
         saturation: 1.258
